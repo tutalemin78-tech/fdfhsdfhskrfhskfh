@@ -1,0 +1,10 @@
+aiogram>=3.13.0
+pyrogram==2.0.106
+TgCrypto==1.2.5
+aiohttp>=3.9.0
+python-dotenv>=1.0.0
+telegraph>=2.2.0
+psycopg2-binary>=2.9.9
+
+cryptography>=43.0.0,<47
+tzdata>=2024.1

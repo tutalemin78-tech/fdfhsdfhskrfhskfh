@@ -1,0 +1,12 @@
+meta:
+  environment: python
+  toolchain:
+    name: pip
+    version: "3.11"
+build:
+  requirementsPath: requirements.txt
+run:
+  scriptName: main.py
+  # Постоянный диск Amvera монтируется в /data — база лежит там и не слетает.
+  persistenceMount: /data
+  containerPort: 80
