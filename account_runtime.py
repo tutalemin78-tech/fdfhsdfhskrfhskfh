@@ -90,7 +90,10 @@ async def get_client(session):
     async with START_LOCKS.setdefault(sid,asyncio.Lock()):
         if sid in CLIENTS: return CLIENTS[sid]
         from userbot_worker import _parse_proxy
-        app=Client(f"sendflow_{sid}",api_id=session['api_id'],api_hash=session['api_hash'],session_string=session['session_string'],in_memory=True,no_updates=False,proxy=_parse_proxy(session.get('proxy')),sleep_threshold=0)
+        # Guard against stale channel peer IDs in Telegram updates from old chats/releases.
+        # With updates enabled, Pyrogram can crash on missing peers after restarts or when channel metadata is stale.
+        # For now we deliberately disable background update polling on account listeners to keep the bot alive.
+        app=Client(f"sendflow_{sid}",api_id=session['api_id'],api_hash=session['api_hash'],session_string=session['session_string'],in_memory=True,no_updates=True,proxy=_parse_proxy(session.get('proxy')))
         async def callback(client,message): await handle_message(session,client,message)
         app.add_handler(MessageHandler(callback,filters.incoming),group=0)
         try:
