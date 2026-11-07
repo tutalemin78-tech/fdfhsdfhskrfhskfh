@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#020404">
+<title>SendFlow</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>try{var _tg=window.Telegram&&window.Telegram.WebApp;if(_tg){_tg.ready();_tg.expand();}}catch(e){}</script>
+<style>
+:root{
+  --bg:#020404;
+  --panel:rgba(255,255,255,.055);
+  --panel-2:rgba(255,255,255,.085);
+  --line:rgba(255,255,255,.10);
+  --line-strong:rgba(255,255,255,.16);
+  --text:#f5f7f8;
+  --muted:#8a9697;
+  --soft:#c8d0d0;
+  --accent:#33f0df;
+  --accent-2:#68a7ff;
+  --ok:#37d99c;
+  --warn:#f0bc58;
+  --err:#ff667a;
+  --shadow:0 18px 55px rgba(0,0,0,.42);
+  --radius:16px;
+  --radius-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%}
+html{background:var(--bg)}
+body{
+  min-height:100vh;
+  color:var(--text);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  background:
+    linear-gradient(145deg,rgba(0,0,0,1) 0%,rgba(0,35,34,.70) 22%,rgba(0,0,0,1) 48%,rgba(0,29,45,.72) 75%,rgba(0,0,0,1) 100%),
+    #000;
+  background-attachment:fixed;
+  padding:calc(16px + env(safe-area-inset-top)) 14px calc(108px + env(safe-area-inset-bottom));
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  letter-spacing:.005em;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:-22%;
+  pointer-events:none;
+  z-index:-2;
+  background:
+    radial-gradient(900px 520px at 17% 8%,rgba(29,207,178,.38),transparent 63%),
+    radial-gradient(780px 560px at 76% 72%,rgba(36,139,202,.34),transparent 66%),
+    radial-gradient(520px 360px at 54% 48%,rgba(255,255,255,.07),transparent 64%);
+  filter:blur(34px);
+  transform:scale(1.02);
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    linear-gradient(180deg,rgba(0,0,0,.22),rgba(0,0,0,.68)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0,rgba(255,255,255,.018) 1px,transparent 1px,transparent 3px);
+  opacity:.75;
+}
+.shell{max-width:760px;margin:0 auto}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+.brand-mini{display:flex;align-items:center;gap:11px;min-width:0}
+.logo{
+  width:42px;height:42px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  color:#06201d;font-weight:950;font-style:italic;letter-spacing:-2px;font-size:16px;
+  background:linear-gradient(145deg,#dffffb,#57eee2 60%,#5fb6ff);
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow:0 0 34px rgba(49,232,215,.34),inset 0 1px 0 rgba(255,255,255,.5);
+}
+.top-title{font-family:Sora,Inter,sans-serif;font-size:14px;color:#fff;font-weight:800;letter-spacing:.02em}
+.top-sub{font-size:12px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.status-chip{
+  display:flex;align-items:center;gap:7px;
+  padding:7px 11px;border-radius:999px;
+  border:1px solid rgba(55,217,156,.28);
+  background:rgba(55,217,156,.10);
+  color:var(--ok);font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 14px rgba(55,217,156,.9);animation:pulse 2.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ---------- Hero ---------- */
+.hero{
+  position:relative;
+  padding:48px 18px 30px;
+  min-height:210px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:22px;
+  background:
+    linear-gradient(155deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 48%,rgba(255,255,255,.06)),
+    rgba(0,0,0,.20);
+  box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.12);
+  margin-bottom:14px;
+}
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:-35%;
+  background:
+    radial-gradient(460px 260px at 22% 10%,rgba(52,236,202,.26),transparent 68%),
+    radial-gradient(500px 280px at 78% 92%,rgba(54,142,213,.28),transparent 70%);
+  filter:blur(18px);
+  animation:drift 14s ease-in-out infinite alternate;
+}
+@keyframes drift{from{transform:translate3d(-10px,-6px,0) scale(1)}to{transform:translate3d(12px,8px,0) scale(1.06)}}
+.hero-badge{
+  position:relative;display:inline-flex;align-items:center;gap:7px;
+  padding:6px 13px;margin-bottom:18px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
+  font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);
+  backdrop-filter:blur(8px);
+}
+.hero-badge .star{color:var(--accent)}
+.wordmark{
+  position:relative;
+  margin:0;
+  font-family:Sora,"Arial Black",Impact,sans-serif;
+  font-size:clamp(44px,13vw,82px);
+  line-height:.88;
+  letter-spacing:-.05em;
+  font-weight:800;
+  font-style:italic;
+  color:#fff;
+  text-shadow:0 0 16px rgba(255,255,255,.30),0 0 46px rgba(54,230,215,.22);
+}
+.hero-tag{
+  position:relative;
+  margin-top:16px;
+  color:#f1f5f5;
+  font-weight:800;
+  font-size:clamp(15px,4vw,20px);
+  letter-spacing:.01em;
+}
+.hero-note{
+  position:relative;
+  margin-top:8px;
+  color:var(--muted);
+  font-size:13px;
+  font-weight:600;
+}
+
+/* ---------- Screens / panels ---------- */
+.screen{display:none;animation:fade .26s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.panel{
+  background:linear-gradient(160deg,rgba(255,255,255,.078),rgba(255,255,255,.03));
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:16px;
+  margin-bottom:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(22px) saturate(135%);
+  -webkit-backdrop-filter:blur(22px) saturate(135%);
+}
+.panel.compact{padding:13px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 13px}
+.section-title{
+  margin:0;
+  font-family:Sora,Inter,sans-serif;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:#fff;
+  display:flex;align-items:center;gap:9px;
+}
+.section-title .ti{color:var(--accent);display:flex}
+.mut{color:var(--muted);font-size:13px}
+.tip{color:var(--muted);font-size:12px;line-height:1.5;margin-top:7px}
+.row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:42px;
+  padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.075);
+}
+.row:last-child{border-bottom:0}
+
+/* ---------- Metrics ---------- */
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.metric{
+  position:relative;
+  min-height:96px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+  padding:13px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  overflow:hidden;
+}
+.metric::after{content:"";position:absolute;right:-20px;top:-20px;width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,rgba(51,240,223,.16),transparent 70%)}
+.metric .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:800;position:relative}
+.metric .value{font-family:Sora,Inter,sans-serif;font-size:26px;font-weight:800;line-height:1;position:relative}
+
+/* ---------- Sparkline / activity ---------- */
+.spark-wrap{position:relative;margin-top:4px}
+.spark{width:100%;height:74px;display:block;overflow:visible}
+.spark-meta{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.spark-num{font-family:Sora,Inter,sans-serif;font-size:22px;font-weight:800;color:#fff}
+.delta{font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px;border:1px solid rgba(55,217,156,.3);background:rgba(55,217,156,.1);color:var(--ok)}
+
+/* ---------- Buttons ---------- */
+.quick-grid,.grid2,.subgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{
+  width:100%;
+  min-height:50px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:13px;
+  padding:13px 15px;
+  margin-top:10px;
+  cursor:pointer;
+  color:#06201d;
+  background:linear-gradient(135deg,rgba(51,240,223,.98),rgba(98,170,255,.92));
+  box-shadow:0 12px 34px rgba(30,204,202,.24),inset 0 1px 0 rgba(255,255,255,.36);
+  font:inherit;
+  font-size:14px;
+  font-weight:800;
+  letter-spacing:.01em;
+  transition:transform .14s ease,opacity .14s ease,box-shadow .14s ease,filter .14s ease;
+}
+.btn:active{transform:translateY(1px) scale(.985);filter:brightness(.97)}
+.btn .bi{display:flex}
+.btn.ghost{
+  color:var(--text);
+  background:rgba(255,255,255,.06);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+.btn.warn{
+  color:#fff;
+  background:linear-gradient(135deg,rgba(255,89,111,.98),rgba(174,59,91,.92));
+  box-shadow:0 12px 30px rgba(255,89,111,.18);
+}
+.btn.sm{min-height:38px;width:auto;margin:0;padding:9px 13px;font-size:12px;border-radius:10px}
+.btn:disabled{opacity:.55;cursor:default}
+
+/* ---------- Inputs ---------- */
+input,textarea,select{
+  width:100%;
+  color:var(--text);
+  background:rgba(0,0,0,.28);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:14px;
+  outline:none;
+  font:inherit;
+  font-size:15px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+  transition:border-color .15s ease,box-shadow .15s ease;
+}
+textarea{min-height:118px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:rgba(51,240,223,.6);box-shadow:0 0 0 3px rgba(51,240,223,.1)}
+label.lab{display:block;margin:13px 2px 7px;color:var(--muted);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+
+/* search box */
+.search{position:relative;margin-bottom:12px}
+.search input{padding-left:42px}
+.search .si{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);display:flex;pointer-events:none}
+
+/* ---------- Pills / chips ---------- */
+.pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:6px 11px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.055);
+  color:var(--soft);
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.pill.ok{color:var(--ok);background:rgba(55,217,156,.10);border-color:rgba(55,217,156,.28)}
+.pill.warn{color:var(--warn);background:rgba(240,188,88,.11);border-color:rgba(240,188,88,.28)}
+.pill.err{color:var(--err);background:rgba(255,102,122,.10);border-color:rgba(255,102,122,.28)}
+.folds{display:flex;flex-wrap:wrap;gap:8px}
+.fchip{
+  user-select:none;
+  cursor:pointer;
+  border:1px solid var(--line);
+  border-radius:11px;
+  padding:10px 13px;
+  color:var(--soft);
+  background:rgba(255,255,255,.045);
+  font-size:13px;
+  font-weight:800;
+  transition:transform .12s ease,background .15s ease;
+}
+.fchip:active{transform:scale(.96)}
+.fchip.on{color:#061312;background:linear-gradient(135deg,#dffffb,#63f1e5);border-color:transparent}
+
+/* ---------- Progress bars ---------- */
+.bar{height:10px;overflow:hidden;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.075);margin:11px 0}
+.bar>i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 20px rgba(51,240,223,.45);transition:width .5s cubic-bezier(.2,.8,.2,1)}
+
+/* ---------- Cards ---------- */
+.job,.acc,.active-box{
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.02));
+  padding:13px;
+  margin-bottom:10px;
+}
+.job .top,.acc{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.acc{border-radius:13px;margin-bottom:9px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--ok);display:inline-block;margin-right:9px;box-shadow:0 0 14px rgba(55,217,156,.8)}
+.msg{display:none;margin-top:12px;padding:11px 13px;border-radius:12px;font-size:13px;line-height:1.45}
+.msg.show{display:block;animation:fade .2s ease}
+.msg.e{color:#ffd4da;background:rgba(255,102,122,.11);border:1px solid rgba(255,102,122,.24)}
+.msg.s{color:#caffec;background:rgba(55,217,156,.10);border:1px solid rgba(55,217,156,.23)}
+.msg.i{color:var(--soft);background:rgba(255,255,255,.055);border:1px solid var(--line)}
+.empty{padding:30px 12px;text-align:center;color:var(--muted);font-size:14px;line-height:1.5}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:8px;padding:4px 9px;color:#fff;font-size:12px}
+.copy{cursor:pointer}
+.logline{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:var(--muted);padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.logline:last-child{border-bottom:0}
+.logline b{color:#fff}
+.active-h{font-weight:800;margin-bottom:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.active-row{font-size:13px;color:var(--soft);margin-top:5px}
+.dim{color:var(--muted)}
+
+/* ---------- Skeleton ---------- */
+.sk-list{display:flex;flex-direction:column;gap:10px}
+.sk{position:relative;overflow:hidden;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.sk.row{height:54px}
+.sk.line{height:13px;border:0}
+.sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.09),transparent);animation:shimmer 1.3s infinite}
+@keyframes shimmer{100%{transform:translateX(100%)}}
+
+/* ---------- Bottom nav ---------- */
+.nav{
+  position:fixed;
+  left:10px;
+  right:10px;
+  bottom:calc(10px + env(safe-area-inset-bottom));
+  z-index:50;
+  max-width:760px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:4px;
+  padding:8px;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:rgba(6,12,12,.72);
+  box-shadow:0 18px 55px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(26px) saturate(140%);
+  -webkit-backdrop-filter:blur(26px) saturate(140%);
+}
+.nav a{
+  min-height:50px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  color:var(--muted);
+  text-decoration:none;
+  border-radius:13px;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.01em;
+  transition:color .15s ease,background .15s ease,transform .12s ease;
+}
+.nav a svg{width:21px;height:21px}
+.nav a:active{transform:scale(.93)}
+.nav a.on{color:#071211;background:linear-gradient(135deg,#ecfffc,#57eee2)}
+
+/* ---------- Toasts ---------- */
+.toast-wrap{position:fixed;left:0;right:0;top:calc(12px + env(safe-area-inset-top));z-index:120;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 14px}
+.toast{
+  pointer-events:auto;
+  max-width:520px;width:100%;
+  display:flex;align-items:center;gap:11px;
+  padding:13px 15px;border-radius:14px;
+  background:rgba(10,16,16,.92);
+  border:1px solid var(--line-strong);
+  box-shadow:0 18px 50px rgba(0,0,0,.55);
+  backdrop-filter:blur(20px);
+  color:var(--text);font-size:14px;font-weight:600;
+  transform:translateY(-22px);opacity:0;
+  transition:transform .28s cubic-bezier(.2,.9,.2,1),opacity .28s ease;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast .tc{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.toast.s .tc{background:rgba(55,217,156,.15);color:var(--ok)}
+.toast.e .tc{background:rgba(255,102,122,.15);color:var(--err)}
+.toast.i .tc{background:rgba(255,255,255,.08);color:var(--accent)}
+
+/* ---------- Pull to refresh ---------- */
+.ptr{
+  position:fixed;left:0;right:0;top:0;z-index:60;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  height:0;overflow:hidden;color:var(--soft);font-size:12px;font-weight:700;
+  transition:height .18s ease;
+}
+.ptr .pi{width:18px;height:18px;display:flex;transition:transform .2s ease}
+.ptr.spin .pi{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- Onboarding ---------- */
+.onb{
+  position:fixed;inset:0;z-index:200;
+  display:none;align-items:flex-end;justify-content:center;
+  background:rgba(2,4,4,.78);backdrop-filter:blur(10px);
+  padding:18px;
+}
+.onb.show{display:flex;animation:fade .3s ease}
+.onb-card{
+  width:100%;max-width:480px;
+  border:1px solid var(--line-strong);border-radius:22px;
+  background:linear-gradient(160deg,rgba(18,26,26,.96),rgba(8,14,14,.96));
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+  padding:26px 22px 22px;
+  animation:slideup .34s cubic-bezier(.2,.9,.2,1);
+}
+@keyframes slideup{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.onb-ico{
+  width:62px;height:62px;border-radius:18px;margin:0 auto 18px;
+  display:flex;align-items:center;justify-content:center;color:#06201d;
+  background:linear-gradient(145deg,#dffffb,#57eee2 60%,#5fb6ff);
+  box-shadow:0 0 40px rgba(49,232,215,.4);
+}
+.onb h3{font-family:Sora,Inter,sans-serif;text-align:center;margin:0 0 8px;font-size:22px;font-weight:800;color:#fff}
+.onb p{text-align:center;margin:0 auto;max-width:340px;color:var(--soft);font-size:14px;line-height:1.55}
+.onb-dots{display:flex;justify-content:center;gap:7px;margin:20px 0 18px}
+.onb-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .25s ease}
+.onb-dots i.on{width:22px;border-radius:999px;background:var(--accent)}
+.onb-actions{display:flex;gap:10px}
+.onb-skip{flex:0 0 auto;background:transparent;border:none;color:var(--muted);font:inherit;font-weight:700;cursor:pointer;padding:14px 6px}
+
+@media (max-width:380px){
+  body{padding:14px 10px 106px}
+  .metric-grid{grid-template-columns:1fr 1fr}
+  .quick-grid,.grid2,.subgrid{grid-template-columns:1fr}
+  .wordmark{font-size:42px}
+  .nav a{font-size:9px}
+}
+</style>
+</head>
+<body>
+
+<div class="ptr" id="ptr">
+  <span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></span>
+  <span id="ptr-text">Потяните для обновления</span>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<main class="shell">
+  <div class="topbar">
+    <div class="brand-mini">
+      <div class="logo">SF</div>
+      <div>
+        <div class="top-title" id="hdr-name">SendFlow</div>
+        <div class="top-sub" id="hdr-sub">Панель управления</div>
+      </div>
+    </div>
+    <div class="status-chip"><span class="status-dot"></span><span>Online</span></div>
+  </div>
+
+  <section class="hero">
+    <div class="hero-badge"><span class="star">&#9733;</span> Premium Broadcast Suite</div>
+    <h1 class="wordmark">SendFlow</h1>
+    <div class="hero-tag">Рассылки / Аккаунты / Мониторинг</div>
+    <div class="hero-note">Управление Telegram-рассылками в одной панели</div>
+  </section>
+
+  <div class="screen active" id="s-home">
+    <div class="panel">
+      <div class="section-head">
+        <h2 class="section-title"><span class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>Обзор</h2>
+      </div>
+      <div class="metric-grid">
+        <div class="metric"><div class="label">Подписка</div><div id="home-sub" class="pill">-</div></div>
+        <div class="metric"><div class="label">Аккаунтов</div><div class="value" id="home-acc" data-count="0">0</div></div>
+        <div class="metric"><div class="label">Активных</div><div class="value" id="home-jobs" data-count="0">0</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="section-head">
+        <h2 class="section-title"><span class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-7 4 4"/></svg></span>Активность</h2>
+        <span class="pill ok" id="home-trend">+0%</span>
+      </div>
+      <div class="spark-wrap">
+        <svg class="spark" id="spark" viewBox="0 0 300 74" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(51,240,223,.35)"/>
+              <stop offset="100%" stop-color="rgba(51,240,223,0)"/>
+            </linearGradient>
+            <linearGradient id="sparkLine" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#33f0df"/>
+              <stop offset="100%" stop-color="#68a7ff"/>
+            </linearGradient>
+          </defs>
+          <path id="spark-area" fill="url(#sparkFill)" d=""></path>
+          <path id="spark-line" fill="none" stroke="url(#sparkLine)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d=""></path>
+          <circle id="spark-dot" r="3.5" fill="#fff" cx="0" cy="0" opacity="0"></circle>
+        </svg>
+      </div>
+      <div class="spark-meta">
+        <div><div class="mut" style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:800">Отправлено всего</div><div class="spark-num" id="spark-total" data-count="0">0</div></div>
+        <div class="tip" style="margin:0;text-align:right">Сообщений<br>по всем рассылкам</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px"><span class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></span>Быстрый старт</h2>
+      <div class="quick-grid">
+        <button class="btn" onclick="go('broadcast')">Новая рассылка</button>
+        <button class="btn ghost" onclick="go('monitor')">Мониторинг</button>
+        <button class="btn ghost" onclick="go('accounts')">Аккаунты</button>
+        <button class="btn ghost" onclick="go('sub')">Подписка</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="s-broadcast">
+    <div class="panel" id="bc-locked" style="display:none">
+      <div class="empty">Для запуска рассылки нужна активная подписка.</div>
+      <button class="btn" onclick="go('sub')">Оформить подписку</button>
+    </div>
+    <div class="panel" id="bc-noacc" style="display:none">
+      <div class="empty">Сначала добавь хотя бы один аккаунт.</div>
+      <button class="btn" onclick="go('accounts')">Добавить аккаунт</button>
+    </div>
+    <div class="panel" id="bc-form">
+      <h2 class="section-title" style="margin-bottom:13px"><span class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7z"/><path d="M22 2 11 13"/></svg></span>Новая рассылка</h2>
+      <label class="lab">Текст сообщения</label>
+      <textarea id="bc-text" placeholder="Введите текст для рассылки"></textarea>
+      <div class="tip">Поддерживаются все шрифты (жирный, курсив, подчёркнутый, зачёркнутый, цитата, моноширинный), премиум-эмодзи и форматирование — пишите как обычно. Фото и видео отправляются через чат с ботом.</div>
+
+      <div id="bc-vars"></div>
+      <button class="btn ghost" id="bc-addvar" onclick="addVariant()">Добавить вариант текста (ротация)</button>
+      <button class="btn ghost" id="bc-ai" onclick="aiPersonalize()" style="display:none">AI-персонализация текста</button>
+      <div id="bc-ai-box" style="display:none;margin-top:8px"></div>
+
+      <label class="lab">Куда отправлять</label>
+      <div id="bc-folds" class="folds"><div class="tip">Загружаю папки...</div></div>
+      <div class="tip" id="bc-fold-tip">Загружаю папки...</div>
+
+      <div class="grid2">
+        <div><label class="lab">Задержка, сек</label><input id="bc-delay" type="number" inputmode="numeric" value="30" min="3"></div>
+        <div><label class="lab">Циклов</label><input id="bc-cycles" type="number" inputmode="numeric" value="1" min="1"></div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <span><b>Авто-вступление по ссылкам</b><div class="tip" style="margin:2px 0 0">Если чат просит подписку на канал, бот попробует вступить и повторить отправку.</div></span>
+        <button class="btn sm" id="bc-autosub" data-on="1" onclick="toggleAutosub()">ВКЛ</button>
+      </div>
+
+      <label class="lab">Авто-папка</label>
+      <input id="bc-autofolder" type="text" placeholder="Название папки для новых каналов">
+      <div class="tip">Пустое поле выключает авто-папку.</div>
+
+      <div id="bc-tpls"></div>
+      <button class="btn" id="bc-go" onclick="startBroadcast()">Запустить рассылку</button>
+      <button class="btn ghost" onclick="saveTemplate()">Сохранить шаблон</button>
+      <button class="btn ghost" onclick="sendToBot('broadcast')">Фото / видео через бота</button>
+      <div class="msg" id="bc-msg"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="s-monitor">
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px"><span class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>Мониторинг</h2>
+      <div class="search"><span class="si"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span><input id="mon-search" type="text" placeholder="Поиск по рассылкам..." oninput="renderMonitor()"></div>
+      <div id="mon-list"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="s-accounts">
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px"><span class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg></span>Мои аккаунты</h2>
+      <div class="search"><span class="si"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span><input id="acc-search" type="text" placeholder="Поиск по номеру..." oninput="renderAccounts()"></div>
+      <div id="acc-list"></div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px"><span class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>Добавить аккаунт</h2>
+      <div id="acc-step-phone">
+        <label class="lab">Номер телефона</label>
+        <input id="acc-phone" type="tel" inputmode="tel" placeholder="+79991234567">
+        <button class="btn" id="acc-send" onclick="sendCode()">Получить код</button>
+      </div>
+      <div id="acc-step-code" style="display:none">
+        <label class="lab">Код из Telegram</label>
+        <input id="acc-code" type="text" inputmode="numeric" placeholder="12345">
+        <button class="btn" id="acc-verify" onclick="verifyCode()">Подтвердить</button>
+        <button class="btn ghost" onclick="resetLogin()">Отмена</button>
+      </div>
+      <div id="acc-step-pass" style="display:none">
+        <label class="lab">Пароль 2FA</label>
+        <input id="acc-pass" type="password" placeholder="Облачный пароль">
+        <button class="btn" id="acc-pverify" onclick="verifyPass()">Войти</button>
+        <button class="btn ghost" onclick="resetLogin()">Отмена</button>
+      </div>
+      <div class="tip">Код приходит в Telegram на этот номер. Сессия хранится у твоего бота.</div>
+      <div class="msg" id="acc-msg"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="s-sub">
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px"><span class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 15 9l7 .5-5.5 4.5L18.5 21 12 17 5.5 21 7.5 14 2 9.5 9 9z"/></svg></span>Подписка</h2>
+      <div class="row"><span class="mut">Статус</span><span id="sub-status" class="pill">-</span></div>
+      <div class="row"><span class="mut">Цена</span><b id="sub-price">- XTR</b></div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px">Тарифы</h2>
+      <div class="row"><span class="mut">Бесплатный период</span><b id="sub-trial">- дн.</b></div>
+      <div class="row"><span class="mut">Аккаунтов на триале</span><b id="sub-trialmax">-</b></div>
+      <div class="row"><span class="mut">На подписке</span><b>Безлимит</b></div>
+      <div class="tip" id="sub-contact" style="margin-top:8px"></div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px">Рефералы</h2>
+      <div class="row"><span class="mut">Приглашено</span><b id="ref-count">0</b></div>
+      <div class="tip" id="ref-note"></div>
+      <div class="row"><span class="code copy" id="ref-link" onclick="cpRef()" style="word-break:break-all">-</span></div>
+      <button class="btn ghost" onclick="cpRef()">Скопировать ссылку</button>
+    </div>
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px">Оплата</h2>
+      <div class="subgrid">
+        <button class="btn" onclick="payStars()">Telegram Stars</button>
+        <button class="btn ghost" onclick="payInfo('card')">Карта РФ</button>
+        <button class="btn ghost" onclick="payInfo('ton')">TON</button>
+        <button class="btn ghost" onclick="payInfo('ua')">Карта UA</button>
+      </div>
+      <div class="msg" id="pay-msg"></div>
+      <div id="pay-detail" style="display:none;margin-top:12px"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="s-logs">
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px"><span class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span>Логи</h2>
+      <div class="search"><span class="si"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span><input id="logs-search" type="text" placeholder="Поиск по логам..." oninput="renderLogs()"></div>
+      <div id="logs-list"></div>
+      <button class="btn ghost" onclick="loadLogs()">Обновить</button>
+    </div>
+  </div>
+
+  <div class="screen" id="s-more">
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px">Еще</h2>
+      <button class="btn ghost" onclick="go('sub')">Подписка</button>
+      <button class="btn ghost" onclick="go('logs')">Логи</button>
+      <button class="btn ghost" onclick="replayOnboarding()">Показать приветствие</button>
+      <button class="btn ghost" id="more-admin" style="display:none" onclick="go('admin')">Админ-панель</button>
+    </div>
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px">Интерфейс</h2>
+      <div class="row"><span class="mut">Стиль</span><b>Dark Premium</b></div>
+      <div class="row"><span class="mut">Фон</span><b>Teal / Cyan Blur</b></div>
+      <div class="row"><span class="mut">Версия</span><b>2.0</b></div>
+    </div>
+  </div>
+
+  <div class="screen" id="s-admin">
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px"><span class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>Админ-панель</h2>
+      <div class="row"><span class="mut">Пользователей всего</span><b id="adm-users" data-count="0">0</b></div>
+      <div class="row"><span class="mut">Активных подписок</span><b id="adm-subs" data-count="0">0</b></div>
+      <div class="row"><span class="mut">Платных подписок</span><b id="adm-paid" data-count="0">0</b></div>
+      <div class="row"><span class="mut">Аккаунтов всего</span><b id="adm-acc" data-count="0">0</b></div>
+      <div class="row"><span class="mut">Активных рассылок</span><b id="adm-bc" data-count="0">0</b></div>
+      <div class="row"><span class="mut">Выручка за 30 дн.</span><b id="adm-rev30">0 XTR</b></div>
+      <div class="row"><span class="mut">Выручка всего</span><b id="adm-revall">0 XTR</b></div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px">Пользователи</h2>
+      <div class="search"><span class="si"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span><input id="adm-users-search" type="text" placeholder="Поиск пользователя..." oninput="renderAdminUsers()"></div>
+      <div id="adm-users-list"></div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px">Аккаунты</h2>
+      <div class="search"><span class="si"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span><input id="adm-acc-search" type="text" placeholder="Поиск по номеру/владельцу..." oninput="renderAdminAccounts()"></div>
+      <div id="adm-acc-list"></div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px">Управление пользователем</h2>
+      <label class="lab">ID или @username</label>
+      <input id="adm-target" type="text" placeholder="123456 или @user">
+      <div class="grid2">
+        <div><label class="lab">Дней</label><input id="adm-days" type="number" value="30" min="1"></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn sm" onclick="admGive()" style="width:100%">Выдать</button></div>
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <button class="btn sm ghost" onclick="admTake()">Забрать</button>
+        <button class="btn sm ghost" onclick="admInfo()">Профиль</button>
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <button class="btn sm warn" onclick="admBan()">Забанить</button>
+        <button class="btn sm ghost" onclick="admUnban()">Разбанить</button>
+      </div>
+      <div class="msg" id="adm-info" style="margin-top:10px"></div>
+      <div class="msg" id="adm-msg"></div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px">Массовая выдача подписки</h2>
+      <label class="lab">Список ID / @username</label>
+      <textarea id="adm-mass-ids" placeholder="123456 789012 @user3"></textarea>
+      <div class="grid2">
+        <div><label class="lab">Дней каждому</label><input id="adm-mass-days" type="number" value="30" min="1"></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn sm" onclick="admMassGive()" style="width:100%">Выдать всем</button></div>
+      </div>
+      <div class="msg" id="adm-mass-msg"></div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px">Сообщение всем</h2>
+      <textarea id="adm-announce" placeholder="Текст сообщения всем..."></textarea>
+      <button class="btn" onclick="admAnnounce()">Отправить всем</button>
+      <div class="msg" id="adm-ann-msg"></div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title" style="margin-bottom:13px">Логи админов</h2>
+      <div id="adm-actions"></div>
+    </div>
+  </div>
+</main>
+
+<nav class="nav">
+  <a data-s="home" class="on" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21v-7h6v7"/></svg>Главная</a>
+  <a data-s="broadcast" onclick="go('broadcast')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7z"/><path d="M22 2 11 13"/></svg>Рассылка</a>
+  <a data-s="monitor" onclick="go('monitor')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Монитор</a>
+  <a data-s="accounts" onclick="go('accounts')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Аккаунты</a>
+  <a data-s="more" onclick="go('more')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Еще</a>
+</nav>
+
+<!-- Onboarding -->
+<div class="onb" id="onb">
+  <div class="onb-card">
+    <div class="onb-ico" id="onb-ico"></div>
+    <h3 id="onb-title"></h3>
+    <p id="onb-text"></p>
+    <div class="onb-dots" id="onb-dots"></div>
+    <div class="onb-actions">
+      <button class="onb-skip" onclick="finishOnboarding()">Пропустить</button>
+      <button class="btn" style="margin:0" id="onb-next" onclick="nextOnboarding()">Далее</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = (new URLSearchParams(location.search)).get("api") || "";
+const tg = window.Telegram ? window.Telegram.WebApp : null;
+if(tg){ try{ tg.ready(); tg.expand(); tg.setHeaderColor && tg.setHeaderColor('#020404'); tg.setBackgroundColor && tg.setBackgroundColor('#020404'); }catch(e){} }
+let STATE = null, FOLDERS = null, CUR = 'home', loginStep = null, foldersLoaded = false, AI_PREVIEW = null, VAR_N = 0;
+let LAST_LOGS = {active:[], logs:[]}, LAST_ADMIN = null;
+let ACT = [];
+const q = s => document.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- Haptics helper ---------- */
+function haptic(type){
+  if(!tg || !tg.HapticFeedback) return;
+  try{
+    if(type==='success'||type==='error'||type==='warning') tg.HapticFeedback.notificationOccurred(type);
+    else tg.HapticFeedback.impactOccurred(type||'light');
+  }catch(e){}
+}
+
+/* ---------- Toasts ---------- */
+const TOAST_ICONS = {
+  s:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  e:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  i:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>'
+};
+function toast(text, kind='i', ms=2600){
+  const wrap = q('#toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast '+kind;
+  el.innerHTML = '<span class="tc">'+(TOAST_ICONS[kind]||TOAST_ICONS.i)+'</span><span>'+esc(text)+'</span>';
+  wrap.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('show'));
+  if(kind==='s') haptic('success'); else if(kind==='e') haptic('error'); else haptic('light');
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),320); }, ms);
+}
+
+/* ---------- Skeleton ---------- */
+function skel(n){
+  let h='<div class="sk-list">';
+  for(let i=0;i<(n||3);i++) h+='<div class="sk row"></div>';
+  return h+'</div>';
+}
+
+/* ---------- Animated counters ---------- */
+function animateValue(el, to){
+  if(!el) return;
+  to = Number(to)||0;
+  const from = Number(el.dataset.count||0);
+  if(from===to){ el.textContent = to; return; }
+  el.dataset.count = to;
+  const dur = 650, t0 = performance.now();
+  function step(t){
+    const p = Math.min(1,(t-t0)/dur);
+    const e = 1-Math.pow(1-p,3);
+    el.textContent = Math.round(from+(to-from)*e);
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ---------- Sparkline ---------- */
+function totalSent(){
+  let n = 0;
+  (STATE && STATE.jobs || []).forEach(j=>{
+    if(Array.isArray(j.accounts) && j.accounts.length){
+      j.accounts.forEach(a=>{ n += Number(a.sent)||0; });
+    } else {
+      n += Number(j.done)||0;
+    }
+  });
+  return n;
+}
+function recordActivity(){
+  const t = totalSent();
+  if(!ACT.length){
+    // seed a gentle premium-looking baseline so the chart is never empty
+    const base = Math.max(t, 6);
+    for(let i=0;i<11;i++){
+      ACT.push(Math.round(base*(0.35+0.5*Math.sin(i/2.2)*Math.sin(i/2.2)) + i*base*0.04));
+    }
+    ACT.push(t);
+  } else if(ACT[ACT.length-1]!==t){
+    ACT.push(t);
+  }
+  if(ACT.length>16) ACT = ACT.slice(-16);
+  drawSpark();
+}
+function drawSpark(){
+  const line = q('#spark-line'), area = q('#spark-area'), dot = q('#spark-dot');
+  if(!line) return;
+  const W=300, H=74, pad=4;
+  const data = ACT.length?ACT:[0,0];
+  const max = Math.max(...data, 1), min = Math.min(...data, 0);
+  const span = (max-min)||1;
+  const stepX = data.length>1 ? (W-pad*2)/(data.length-1) : 0;
+  const pts = data.map((v,i)=>{
+    const x = pad + i*stepX;
+    const y = pad + (H-pad*2)*(1-(v-min)/span);
+    return [x,y];
+  });
+  let d = '';
+  pts.forEach((p,i)=>{ d += (i===0?'M':'L')+p[0].toFixed(1)+' '+p[1].toFixed(1)+' '; });
+  line.setAttribute('d', d.trim());
+  area.setAttribute('d', d.trim()+'L'+(pad+(data.length-1)*stepX).toFixed(1)+' '+(H-pad)+' L'+pad+' '+(H-pad)+' Z');
+  const last = pts[pts.length-1];
+  dot.setAttribute('cx', last[0]); dot.setAttribute('cy', last[1]); dot.setAttribute('opacity','1');
+  // trend
+  const trend = q('#home-trend');
+  if(trend && data.length>1){
+    const prev = data[data.length-2]||0, cur = data[data.length-1]||0;
+    const pct = prev>0 ? Math.round((cur-prev)/prev*100) : (cur>0?100:0);
+    trend.textContent = (pct>=0?'+':'')+pct+'%';
+    trend.className = 'pill '+(pct>=0?'ok':'err');
+  }
+  animateValue(q('#spark-total'), data[data.length-1]);
+}
+
+/* ---------- API ---------- */
+async function api(path, extra){
+  try{
+    const r = await fetch(API_BASE + path, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(Object.assign({initData: (tg && tg.initData) || ''}, extra||{}))
+    });
+    let d = {}; try{ d = await r.json(); }catch(e){}
+    if(d && typeof d==='object') d._status = r.status;
+    return d;
+  }catch(e){
+    return {ok:false, error:'network', message:'Нет связи с ботом. Открой Mini App через бота.'};
+  }
+}
+
+/* ---------- Navigation ---------- */
+const NAV_MAP = {logs:'more', sub:'more', admin:'more'};
+function go(name){
+  CUR = name;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el = q('#s-'+name); if(el) el.classList.add('active');
+  const navName = NAV_MAP[name] || name;
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on', a.dataset.s===navName));
+  window.scrollTo(0,0);
+  haptic('light');
+  if(name==='broadcast') loadFolders();
+  if(name==='monitor') renderMonitor();
+  if(name==='accounts') renderAccounts();
+  if(name==='sub') renderSub();
+  if(name==='logs') loadLogs();
+  if(name==='admin') loadAdmin();
+}
+
+function renderHome(){
+  if(!STATE) return;
+  q('#hdr-name').textContent = STATE.bot_name || 'SendFlow';
+  const sub = q('#home-sub');
+  if(STATE.is_admin){ sub.textContent='Админ'; sub.className='pill ok'; }
+  else if(STATE.subscribed){ sub.textContent = subLeft(); sub.className='pill ok'; }
+  else { sub.textContent='Нет подписки'; sub.className='pill err'; }
+  animateValue(q('#home-acc'), STATE.account_count||0);
+  const active = (STATE.jobs||[]).filter(j=>j.status==='running'||j.status==='paused').length;
+  animateValue(q('#home-jobs'), active);
+  q('#more-admin').style.display = STATE.is_admin ? 'flex' : 'none';
+  recordActivity();
+}
+
+function subLeft(){
+  if(!STATE || !STATE.expires_at) return 'Активна';
+  const d = new Date(STATE.expires_at), now = new Date();
+  const ms = d - now; if(ms<=0) return 'Истекла';
+  const days = Math.floor(ms/86400000), hrs = Math.floor((ms%86400000)/3600000);
+  return days>0 ? ('еще '+days+' дн.') : ('еще '+hrs+' ч.');
+}
+
+async function loadFolders(){
+  const hasAccess = STATE && STATE.has_access;
+  const hasAcc = STATE && STATE.account_count>0;
+  q('#bc-locked').style.display = hasAccess ? 'none':'block';
+  q('#bc-noacc').style.display = (hasAccess && !hasAcc) ? 'block':'none';
+  q('#bc-form').style.display = (hasAccess && hasAcc) ? 'block':'none';
+  const aiBtn = q('#bc-ai'); if(aiBtn) aiBtn.style.display = (STATE && STATE.is_admin) ? 'block':'none';
+  if(!(hasAccess && hasAcc)) return;
+  if(foldersLoaded) return;
+  const tip = q('#bc-fold-tip');
+  const box = q('#bc-folds');
+  let d = null;
+  try { d = await api('/api/folders', {}); } catch(e){ d = null; }
+  if((!tg || !tg.initData) && !(d && d.ok)) d = {ok:true, folders:[{id:1,title:'Клиенты'},{id:2,title:'Партнеры'}]};
+  FOLDERS = (d && d.folders) || [];
+  let html = '<div class="fchip on" data-id="all" onclick="toggleFold(this)">Все чаты</div>';
+  FOLDERS.forEach(f=>{
+    html += '<div class="fchip" data-id="'+f.id+'" onclick="toggleFold(this)">'+esc(f.title||('Папка '+f.id))+'</div>';
+  });
+  box.innerHTML = html;
+  tip.textContent = FOLDERS.length ? 'Можно выбрать несколько папок — рассылка пойдёт строго по выбранным. Или оставьте «Все чаты».' : 'Папки Telegram не найдены — доступна рассылка по «Всем чатам».';
+  foldersLoaded = true;
+}
+
+function toggleFold(el){
+  haptic('light');
+  const box = q('#bc-folds');
+  const allChip = box.querySelector('.fchip[data-id="all"]');
+  if(el.dataset.id === 'all'){
+    box.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'));
+    el.classList.add('on');
+  } else {
+    if(allChip) allChip.classList.remove('on');
+    el.classList.toggle('on');
+    const anyOn = [...box.querySelectorAll('.fchip')].some(c=>c.dataset.id!=='all' && c.classList.contains('on'));
+    if(!anyOn && allChip) allChip.classList.add('on');
+  }
+}
+
+function addVariant(){
+  if(VAR_N >= 3){ toast('Максимум 3 варианта','e'); return; }
+  VAR_N++;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = '<label class="lab">Вариант текста '+VAR_N+'</label><textarea class="bc-var" placeholder="Ещё один вариант — бот случайно чередует их при рассылке"></textarea>';
+  q('#bc-vars').appendChild(wrap);
+  haptic('light');
+}
+
+async function aiPersonalize(){
+  const text = q('#bc-text').value.trim();
+  if(!text){ showMsg('bc-msg','e','Введите текст для рассылки.'); toast('Введите текст','e'); return; }
+  const btn = q('#bc-ai'); btn.disabled=true; const old=btn.textContent; btn.textContent='AI думает...';
+  const d = await api('/api/action', {action:'ai', text});
+  btn.disabled=false; btn.textContent=old;
+  if(d && d.ok && d.text){ AI_PREVIEW=d.text; renderAiPreview(d.text); }
+  else if(d && d.error==='ai_dev'){ toast('AI-персонализация в разработке','e'); }
+  else if(d && d.error==='ai_off'){ toast('AI не настроен','e'); }
+  else { toast('AI недоступен, попробуйте ещё раз','e'); }
+}
+function renderAiPreview(t){
+  const box = q('#bc-ai-box'); box.style.display='block';
+  box.innerHTML = '<div class="tip" style="white-space:pre-wrap">'+esc(t)+'</div>'
+    + '<button class="btn" onclick="aiApply()">Применить</button>'
+    + '<button class="btn ghost" onclick="aiPersonalize()">Перегенерировать</button>'
+    + '<button class="btn ghost" onclick="aiCancel()">Отмена</button>';
+}
+function aiApply(){ if(AI_PREVIEW){ q('#bc-text').value=AI_PREVIEW; toast('Применено','s'); } aiCancel(); }
+function aiCancel(){ const box=q('#bc-ai-box'); box.style.display='none'; box.innerHTML=''; AI_PREVIEW=null; }
+
+async function startBroadcast(){
+  const text = q('#bc-text').value.trim();
+  const box = q('#bc-folds');
+  const allChip = box.querySelector('.fchip[data-id="all"]');
+  const allOn = allChip && allChip.classList.contains('on');
+  const folders = allOn ? [] : [...box.querySelectorAll('.fchip.on')].map(c=>c.dataset.id).filter(id=>id!=='all');
+  const delay = parseInt(q('#bc-delay').value)||30;
+  const cycles = parseInt(q('#bc-cycles').value)||1;
+  const variants = [...document.querySelectorAll('.bc-var')].map(t=>t.value.trim()).filter(Boolean);
+  if(!text){ showMsg('bc-msg','e','Введи текст сообщения.'); toast('Введи текст сообщения','e'); return; }
+  if(!allOn && !folders.length){ showMsg('bc-msg','e','Выбери папку или режим "Все чаты".'); toast('Выбери папку или «Все чаты»','e'); return; }
+  const btn = q('#bc-go'); btn.disabled=true; btn.textContent='Запускаю...';
+  const asb = q('#bc-autosub'); const autosub = !asb || asb.dataset.on==='1';
+  const autofolder = (q('#bc-autofolder').value||'').trim();
+  const d = await api('/api/action', {action:'start', text, variants, folders, delay, cycles, autosub, autofolder});
+  btn.disabled=false; btn.textContent='Запустить рассылку';
+  if(d && d.ok){
+    STATE = d; renderAll();
+    showMsg('bc-msg','s','Рассылка запущена. Открываю мониторинг...');
+    toast('Рассылка запущена','s');
+    setTimeout(()=>go('monitor'), 600);
+  } else if(!tg || !tg.initData) {
+    showMsg('bc-msg','s','Демо: рассылка запущена.');
+    toast('Демо: рассылка запущена','s');
+    setTimeout(()=>go('monitor'), 500);
+  } else {
+    const m = {no_sub:'Нужна активная подписка.', no_accounts:'Сначала добавь аккаунт.', no_text:'Введи текст.'}[d&&d.error] || (d&&d.message) || 'Не удалось запустить.';
+    showMsg('bc-msg','e',m); toast(m,'e');
+  }
+}
+
+function toggleAutosub(){
+  const b=q('#bc-autosub'); const on=b.dataset.on==='1';
+  b.dataset.on=on?'0':'1'; b.textContent=on?'ВЫКЛ':'ВКЛ'; b.className='btn sm'+(on?' ghost':'');
+  haptic('light');
+}
+
+function renderTemplates(){
+  const box=q('#bc-tpls'); if(!box) return;
+  const t=(STATE&&STATE.templates)||[];
+  if(!t.length){ box.innerHTML=''; return; }
+  box.innerHTML='<label class="lab">Шаблоны</label>'+t.map(x=>`<div class="acc"><span><b>${esc(x.name)}</b></span><span style="display:flex;gap:6px"><button class="btn sm" onclick="useTemplate(${x.id})">Вставить</button> <button class="btn sm warn" onclick="delTemplate(${x.id})">Удалить</button></span></div>`).join('');
+}
+function useTemplate(id){
+  const t=((STATE&&STATE.templates)||[]).find(x=>x.id===id);
+  if(t){ q('#bc-text').value=t.text||''; showMsg('bc-msg','s','Шаблон вставлен. Проверь и запусти.'); toast('Шаблон вставлен','s'); window.scrollTo(0,0); }
+}
+async function saveTemplate(){
+  const text=q('#bc-text').value.trim();
+  if(!text){ showMsg('bc-msg','e','Введи текст, чтобы сохранить шаблон.'); toast('Сначала введи текст','e'); return; }
+  let name='Шаблон'; try{ name=(prompt('Название шаблона:','Мой шаблон')||'Шаблон').trim()||'Шаблон'; }catch(e){}
+  const delay=parseInt(q('#bc-delay').value)||30; const cycles=parseInt(q('#bc-cycles').value)||1;
+  const asb=q('#bc-autosub'); const autosub=!asb||asb.dataset.on==='1';
+  const autofolder=(q('#bc-autofolder').value||'').trim();
+  const d=await api('/api/action',{action:'save_template',name,text,delay,cycles,autosub,autofolder});
+  if(d&&d.ok){ STATE=d; renderTemplates(); showMsg('bc-msg','s','Шаблон "'+name+'" сохранен.'); toast('Шаблон сохранён','s'); }
+  else if(!tg || !tg.initData){ showMsg('bc-msg','s','Демо: шаблон сохранен.'); toast('Демо: шаблон сохранён','s'); }
+  else { showMsg('bc-msg','e',(d&&d.message)||'Не удалось сохранить.'); toast('Не удалось сохранить','e'); }
+}
+async function delTemplate(id){
+  const d=await api('/api/action',{action:'del_template',id});
+  if(d&&d.ok){ STATE=d; renderTemplates(); toast('Шаблон удалён','i'); }
+}
+
+/* ---------- Monitor ---------- */
+function renderMonitor(){
+  const box = q('#mon-list');
+  let jobs = (STATE && STATE.jobs) || [];
+  const term = (q('#mon-search') && q('#mon-search').value || '').trim().toLowerCase();
+  if(term) jobs = jobs.filter(j=>((j.name||'')+' '+(j.target||'')+' '+(j.status||'')).toLowerCase().includes(term));
+  if(!jobs.length){
+    box.innerHTML = term ? '<div class="empty">Ничего не найдено по запросу.</div>' : '<div class="empty">Пока нет рассылок. Создай первую во вкладке "Рассылка".</div>';
+    return;
+  }
+  const head = {running:'Идет', paused:'Пауза', stopped:'Остановлена', done:'Завершена'};
+  const cls = {running:'ok', paused:'warn', stopped:'err', done:''};
+  box.innerHTML = jobs.slice().reverse().map(j=>{
+    let ctrl = '';
+    if(j.status==='running') ctrl = `<button class="btn sm ghost" onclick="jobAct(${j.id},'pause')">Пауза</button><button class="btn sm warn" onclick="jobAct(${j.id},'stop')">Стоп</button>`;
+    else if(j.status==='paused') ctrl = `<button class="btn sm" onclick="jobAct(${j.id},'resume')">Продолжить</button><button class="btn sm warn" onclick="jobAct(${j.id},'stop')">Стоп</button>`;
+    return `<div class="job">
+      <div class="top"><b>${esc(j.name)}</b><span class="pill ${cls[j.status]||''}">${head[j.status]||j.status}</span></div>
+      <div class="bar"><i style="width:${j.pct||0}%"></i></div>
+      <div class="mut">${esc(j.target||'Все чаты')} / циклов ${j.cycles||1}</div>
+      <div class="mut">${j.done||0} / ${j.total||0} / ${j.pct||0}% / ${esc(j.eta||'-')}</div>
+      ${j.error?`<div class="mut" style="color:var(--err);margin-top:5px">${esc(j.error)}</div>`:''}
+      <div style="display:flex;gap:8px;margin-top:10px">${ctrl}</div>
+    </div>`;
+  }).join('');
+}
+async function jobAct(id, action){
+  haptic('medium');
+  const d = await api('/api/action', {action, job_id:id});
+  if(d && d.ok){ STATE = d; renderMonitor(); renderHome();
+    toast({pause:'Рассылка на паузе',resume:'Рассылка продолжена',stop:'Рассылка остановлена'}[action]||'Готово', action==='stop'?'i':'s');
+  }
+}
+
+/* ---------- Accounts ---------- */
+function renderAccounts(){
+  const box = q('#acc-list');
+  let accs = (STATE && STATE.accounts) || [];
+  const term = (q('#acc-search') && q('#acc-search').value || '').trim().toLowerCase();
+  if(term) accs = accs.filter(a=>String(a.phone||'').toLowerCase().includes(term));
+  if(!accs.length){
+    box.innerHTML = term ? '<div class="empty">Аккаунт не найден.</div>' : '<div class="empty">Аккаунтов пока нет. Добавь первый ниже.</div>';
+    return;
+  }
+  box.innerHTML = accs.map(a=>`<div class="acc">
+      <span><span class="dot"></span><b>${esc(a.phone)}</b></span>
+      <button class="btn sm warn" onclick="delAcc(${a.id})">Удалить</button>
+    </div>`).join('');
+}
+async function delAcc(id){
+  if(tg && tg.showConfirm){ tg.showConfirm('Удалить этот аккаунт?', async(ok)=>{ if(ok) await doDel(id); }); }
+  else if(confirm('Удалить аккаунт?')) await doDel(id);
+}
+async function doDel(id){
+  const d = await api('/api/account/delete', {id});
+  if(d && d.ok){ await refresh(); renderAccounts(); showMsg('acc-msg','s','Аккаунт удален.'); toast('Аккаунт удалён','i'); }
+  else if(!tg || !tg.initData){ showMsg('acc-msg','s','Демо: аккаунт удален.'); toast('Демо: аккаунт удалён','i'); }
+  else { showMsg('acc-msg','e',(d&&d.message)||'Не удалось удалить.'); toast('Не удалось удалить','e'); }
+}
+async function sendCode(){
+  const phone = q('#acc-phone').value.trim();
+  if(!phone){ showMsg('acc-msg','e','Введи номер телефона.'); toast('Введи номер телефона','e'); return; }
+  const b=q('#acc-send'); b.disabled=true; b.textContent='Отправляю...';
+  const d = await api('/api/account/login', {step:'send_code', phone});
+  b.disabled=false; b.textContent='Получить код';
+  if(d && d.ok && d.step==='code'){ loginStep='code'; swapLogin('code'); showMsg('acc-msg','i',d.message||'Код отправлен.'); toast('Код отправлен','s'); }
+  else if(!tg || !tg.initData){ loginStep='code'; swapLogin('code'); showMsg('acc-msg','i','Демо: код отправлен.'); toast('Демо: код отправлен','i'); }
+  else { showMsg('acc-msg','e',(d&&d.message)||'Ошибка отправки кода.'); toast('Ошибка отправки кода','e'); }
+}
+async function verifyCode(){
+  const code = q('#acc-code').value.trim();
+  if(!code){ showMsg('acc-msg','e','Введи код.'); toast('Введи код','e'); return; }
+  const b=q('#acc-verify'); b.disabled=true; b.textContent='Проверяю...';
+  const d = await api('/api/account/login', {step:'verify_code', code});
+  b.disabled=false; b.textContent='Подтвердить';
+  if(d && d.ok && d.done){ finishLogin(d.message); }
+  else if(d && d.ok && d.step==='password'){ loginStep='password'; swapLogin('pass'); showMsg('acc-msg','i',d.message||'Введи пароль 2FA.'); toast('Нужен пароль 2FA','i'); }
+  else if(!tg || !tg.initData){ finishLogin('Демо: аккаунт добавлен.'); }
+  else { showMsg('acc-msg','e',(d&&d.message)||'Неверный код.'); toast('Неверный код','e'); }
+}
+async function verifyPass(){
+  const password = q('#acc-pass').value;
+  if(!password){ showMsg('acc-msg','e','Введи пароль.'); toast('Введи пароль','e'); return; }
+  const b=q('#acc-pverify'); b.disabled=true; b.textContent='Вхожу...';
+  const d = await api('/api/account/login', {step:'password', password});
+  b.disabled=false; b.textContent='Войти';
+  if(d && d.ok && d.done){ finishLogin(d.message); }
+  else if(!tg || !tg.initData){ finishLogin('Демо: аккаунт добавлен.'); }
+  else { showMsg('acc-msg','e',(d&&d.message)||'Неверный пароль.'); toast('Неверный пароль','e'); }
+}
+async function finishLogin(msg){
+  resetLogin();
+  q('#acc-phone').value=''; q('#acc-code').value=''; q('#acc-pass').value='';
+  await refresh(); renderAccounts();
+  showMsg('acc-msg','s', msg||'Аккаунт добавлен.');
+  toast('Аккаунт добавлен','s');
+}
+function swapLogin(which){
+  q('#acc-step-phone').style.display = which==='phone'?'block':'none';
+  q('#acc-step-code').style.display = which==='code'?'block':'none';
+  q('#acc-step-pass').style.display = which==='pass'?'block':'none';
+}
+function resetLogin(){ loginStep=null; swapLogin('phone'); }
+
+/* ---------- Subscription ---------- */
+function renderSub(){
+  if(!STATE) return;
+  const st = q('#sub-status');
+  if(STATE.is_admin){ st.textContent='Админ'; st.className='pill ok'; }
+  else if(STATE.subscribed){ st.textContent=subLeft(); st.className='pill ok'; }
+  else { st.textContent='Нет подписки'; st.className='pill err'; }
+  q('#sub-price').textContent = (STATE.price_stars||0)+' XTR';
+  if(q('#sub-trial')) q('#sub-trial').textContent = (STATE.free_days||0)+' дн.';
+  if(q('#sub-trialmax')) q('#sub-trialmax').textContent = (STATE.trial_max||0);
+  if(q('#sub-contact')) q('#sub-contact').innerHTML = STATE.owner_contact ? ('По оплате и вопросам: <a href="'+esc(STATE.owner_contact_url||'#')+'" style="color:var(--accent)">'+esc(STATE.owner_contact)+'</a>') : '';
+  if(q('#ref-count')) q('#ref-count').textContent = STATE.ref_count||0;
+  if(q('#ref-note')) q('#ref-note').textContent = 'За каждого друга по твоей ссылке +'+(STATE.ref_hours||0)+' ч подписки.';
+  if(q('#ref-link')) q('#ref-link').textContent = STATE.ref_link || 'ссылка доступна в боте';
+}
+function cpRef(){ const l = STATE && STATE.ref_link; if(l) cp(l); else { showMsg('pay-msg','i','Ссылка доступна в боте.'); toast('Ссылка доступна в боте','i'); } }
+async function payStars(){
+  showMsg('pay-msg','i','Готовлю счет...');
+  const d = await api('/api/invoice', {});
+  if(d && d.ok && d.link && tg && tg.openInvoice){
+    hideMsg('pay-msg');
+    tg.openInvoice(d.link, (status)=>{
+      if(status==='paid'){ showMsg('pay-msg','s','Оплачено. Подписка активирована.'); toast('Оплачено! Подписка активна','s'); setTimeout(refresh,1500); }
+      else if(status==='failed'){ showMsg('pay-msg','e','Оплата не прошла.'); toast('Оплата не прошла','e'); }
+    });
+  } else if(d && d.ok && d.link){
+    if(tg && tg.openTelegramLink) tg.openTelegramLink(d.link); else window.open(d.link,'_blank');
+  } else if(!tg || !tg.initData){
+    showMsg('pay-msg','i','Демо: счет Telegram Stars доступен внутри бота.');
+    toast('Демо-режим оплаты','i');
+  } else {
+    showMsg('pay-msg','e',(d&&d.message)||'Не удалось создать счет. Попробуй через бота.');
+    toast('Не удалось создать счёт','e');
+  }
+}
+async function payInfo(method){
+  hideMsg('pay-msg');
+  const det = q('#pay-detail'); det.style.display='block'; det.innerHTML = skel(2);
+  let d = await api('/api/pay', {method});
+  if((!tg || !tg.initData) && !(d && d.ok)){
+    d = {ok:true, days:30, info:{title:'Ручная оплата', card:'0000 0000 0000 0000', holder:'SendFlow', note:'Демо-режим. В б��те ��удут реальные реквизиты.'}};
+  }
+  if(!(d && d.ok)){ det.innerHTML='<div class="mut">Не удалось загрузить.</div>'; return; }
+  const i = d.info||{};
+  let html = `<b>${esc(i.title)}</b><div class="mut" style="margin:6px 0">Сумма: подписка на ${d.days} дн.</div>`;
+  if(i.card) html += `<div class="row"><span class="mut">Реквизиты</span><span class="code copy" onclick="cp('${esc(i.card)}')">${esc(i.card)}</span></div>`;
+  if(i.holder) html += `<div class="row"><span class="mut">Получатель</span><b>${esc(i.holder)}</b></div>`;
+  html += `<div class="tip" style="margin-top:8px">${esc(i.note)}</div>`;
+  det.innerHTML = html;
+}
+function cp(t){ try{ navigator.clipboard.writeText(t); haptic('light'); showMsg('pay-msg','s','Скопировано: '+t); toast('Скопировано','s'); }catch(e){} }
+
+/* ---------- Logs ---------- */
+async function loadLogs(){
+  const box = q('#logs-list'); box.innerHTML = skel(3);
+  let d = await api('/api/logs', {});
+  if((!tg || !tg.initData) && !(d && d.ok)){
+    d = {ok:true, active:[{job:'Рассылка #1',cycle:1,cycles:1,cur:'Чат продаж',next:'Партнеры',phone:'+79990000001',sent:28,failed:1}], logs:[{ts:'12:40',text:'Рассылка запущена'},{ts:'12:42',text:'Отправлено в Чат продаж'}]};
+  }
+  if(d && d.error==='network'){ box.innerHTML='<div class="empty">Нет связи с ботом. Открой Mini App кнопкой внутри бота.</div>'; return; }
+  LAST_LOGS = {active:(d && d.active)||[], logs:(d && d.logs)||[]};
+  renderLogs();
+}
+function renderLogs(){
+  const box = q('#logs-list');
+  const term = (q('#logs-search') && q('#logs-search').value || '').trim().toLowerCase();
+  let active = LAST_LOGS.active||[];
+  let logs = LAST_LOGS.logs||[];
+  if(term){
+    active = active.filter(a=>JSON.stringify(a).toLowerCase().includes(term));
+    logs = logs.filter(l=>((l.ts||'')+' '+(l.text||'')).toLowerCase().includes(term));
+  }
+  let html = '';
+  if(active.length){
+    html += active.map(a=>`<div class="active-box">
+      <div class="active-h">${esc(a.job||'Рассылка')} <span class="pill ok">цикл ${esc(a.cycle)}/${esc(a.cycles)}</span></div>
+      <div class="active-row">Сейчас: <b>${esc(a.cur)}</b></div>
+      <div class="active-row">Следующий: <b>${esc(a.next)}</b></div>
+      <div class="active-row dim">${esc(a.phone)} - отправлено ${esc(a.sent)}, ошибок ${esc(a.failed)}</div>
+    </div>`).join('');
+  }
+  if(!logs.length && !active.length){ box.innerHTML = term ? '<div class="empty">Ничего не найдено.</div>' : '<div class="empty">Пока пусто.</div>'; return; }
+  html += logs.map(l=>`<div class="logline"><b>${esc(l.ts)}</b> ${esc(l.text)}</div>`).join('');
+  box.innerHTML = html;
+}
+
+/* ---------- Admin ---------- */
+const ADM_ACT_NAMES={give:'выдал подписку',take:'забрал подписку',massgive:'массовая выдача',ban:'забанил',unban:'разбанил',announce:'рассылка ��сем'};
+async function loadAdmin(){
+  ['adm-users-list','adm-acc-list','adm-actions'].forEach(id=>{ if(q('#'+id)) q('#'+id).innerHTML = skel(2); });
+  let d = await api('/api/admin', {});
+  if((!tg || !tg.initData) && !(d && d.ok)){
+    d = {ok:true, users_count:42, active_subs:18, paid_subs:11, accounts_count:29, active_broadcasts:2, revenue_30d:450, revenue_total:2100,
+      users:[{id:123456,name:'Demo User',username:'demo',subscribed:true,banned:false}],
+      accounts:[{id:1,phone:'+79990000001',owner:123456}],
+      actions:[{ts:'12:35',action:'give',target:123456,detail:'30 дн.'}]};
+  }
+  if(!(d && d.ok)){ q('#adm-users-list').innerHTML='<div class="empty">Доступно только админу.</div>'; return; }
+  LAST_ADMIN = d;
+  animateValue(q('#adm-users'), d.users_count||0);
+  animateValue(q('#adm-subs'), d.active_subs||0);
+  if(q('#adm-paid')) animateValue(q('#adm-paid'), d.paid_subs||0);
+  animateValue(q('#adm-acc'), d.accounts_count||0);
+  if(q('#adm-bc')) animateValue(q('#adm-bc'), d.active_broadcasts||0);
+  if(q('#adm-rev30')) q('#adm-rev30').textContent = (d.revenue_30d||0)+' XTR';
+  if(q('#adm-revall')) q('#adm-revall').textContent = (d.revenue_total||0)+' XTR';
+  renderAdminUsers();
+  renderAdminAccounts();
+  if(q('#adm-actions')) q('#adm-actions').innerHTML = (d.actions||[]).map(a=>`<div class="logline"><b>${esc(a.ts)}</b> ${esc(ADM_ACT_NAMES[a.action]||a.action)}${a.target?(' -> <span class="code">'+esc(a.target)+'</span>'):''} ${a.detail?('<span class="mut">'+esc(a.detail)+'</span>'):''}</div>`).join('') || '<div class="empty">Пока нет действий.</div>';
+}
+function renderAdminUsers(){
+  if(!LAST_ADMIN) return;
+  const term = (q('#adm-users-search') && q('#adm-users-search').value || '').trim().toLowerCase();
+  let users = LAST_ADMIN.users||[];
+  if(term) users = users.filter(u=>((u.name||'')+' '+(u.username||'')+' '+(u.id||'')).toLowerCase().includes(term));
+  q('#adm-users-list').innerHTML = users.map(u=>`<div class="acc">
+      <span><b>${esc(u.name||u.id)}</b> <span class="mut">${u.username?('@'+esc(u.username)):''}</span></span>
+      <span class="mut code">${u.id}</span></div>`).join('') || '<div class="empty">'+(term?'Не найдено.':'Пусто.')+'</div>';
+}
+function renderAdminAccounts(){
+  if(!LAST_ADMIN) return;
+  const term = (q('#adm-acc-search') && q('#adm-acc-search').value || '').trim().toLowerCase();
+  let accs = LAST_ADMIN.accounts||[];
+  if(term) accs = accs.filter(a=>((a.phone||'')+' '+(a.owner||'')).toLowerCase().includes(term));
+  q('#adm-acc-list').innerHTML = accs.map(a=>`<div class="acc">
+      <span><span class="dot"></span><b>${esc(a.phone)}</b></span>
+      <span class="mut">владелец <span class="code">${a.owner}</span></span></div>`).join('') || '<div class="empty">'+(term?'Не найдено.':'Пусто.')+'</div>';
+}
+async function admGive(){
+  const target=q('#adm-target').value.trim(); const days=parseInt(q('#adm-days').value)||0;
+  if(!target||days<1){ showMsg('adm-msg','e','Укажи ID/@username и число дней.'); return; }
+  const d=await api('/api/admin',{op:'give',target,days});
+  if(d&&d.ok){ showMsg('adm-msg','s','Подписка выдана.'); toast('Подписка выдана','s'); loadAdmin(); } else { showMsg('adm-msg','e',(d&&d.message)||'Не удалось.'); toast('Не удалось','e'); }
+}
+async function admTake(){
+  const target=q('#adm-target').value.trim();
+  if(!target){ showMsg('adm-msg','e','Укажи ID/@username.'); return; }
+  const d=await api('/api/admin',{op:'take',target});
+  if(d&&d.ok){ showMsg('adm-msg','s','Подписка снята.'); toast('Подписка снята','i'); loadAdmin(); } else { showMsg('adm-msg','e',(d&&d.message)||'Не удалось.'); toast('Не удалось','e'); }
+}
+async function admBan(){
+  const target=q('#adm-target').value.trim();
+  if(!target){ showMsg('adm-msg','e','Укажи ID/@username.'); return; }
+  const d=await api('/api/admin',{op:'ban',target});
+  if(d&&d.ok){ showMsg('adm-msg','s','Пользователь забанен.'); toast('Пользователь забанен','i'); loadAdmin(); } else { showMsg('adm-msg','e',(d&&d.message)||'Не удалось.'); toast('Не удалось','e'); }
+}
+async function admUnban(){
+  const target=q('#adm-target').value.trim();
+  if(!target){ showMsg('adm-msg','e','Укажи ID/@username.'); return; }
+  const d=await api('/api/admin',{op:'unban',target});
+  if(d&&d.ok){ showMsg('adm-msg','s','Пользователь разбанен.'); toast('Пользователь разбанен','s'); loadAdmin(); } else { showMsg('adm-msg','e',(d&&d.message)||'Не удалось.'); toast('Не удалось','e'); }
+}
+async function admInfo(){
+  const target=q('#adm-target').value.trim();
+  if(!target){ showMsg('adm-msg','e','Укажи ID/@username.'); return; }
+  const box=q('#adm-info'); box.className='msg show i'; box.textContent='Загрузка...';
+  const d=await api('/api/admin',{op:'userinfo',target});
+  if(d&&d.ok&&d.info){
+    const i=d.info;
+    let h=`<b>Профиль ${esc(i.id)}</b><br>Подписка: ${i.subscribed?('активна'+(i.expires?(' до '+esc(i.expires)):'')):'нет'}${i.banned?' / забанен':''}<br>Аккаунтов: ${i.accounts||0}`;
+    if((i.logs||[]).length){ h+='<br><br><b>Логи:</b><br>'+i.logs.map(l=>esc(l)).join('<br>'); }
+    box.className='msg show i'; box.innerHTML=h;
+  } else { box.className='msg show e'; box.textContent=(d&&d.message)||'Не найдено.'; }
+}
+async function admMassGive(){
+  const ids=q('#adm-mass-ids').value.trim(); const days=parseInt(q('#adm-mass-days').value)||0;
+  if(!ids||days<1){ showMsg('adm-mass-msg','e','Вставь список ID и число дней.'); return; }
+  const d=await api('/api/admin',{op:'massgive',ids,days});
+  if(d&&d.ok){ showMsg('adm-mass-msg','s','Выдано всем из списка.'); toast('Выдано всем из списка','s'); loadAdmin(); } else { showMsg('adm-mass-msg','e',(d&&d.message)||'Не удалось.'); toast('Не удалось','e'); }
+}
+async function admAnnounce(){
+  const text=q('#adm-announce').value.trim();
+  if(!text){ showMsg('adm-ann-msg','e','Введи текст.'); return; }
+  const d=await api('/api/admin',{op:'announce',text});
+  if(d&&d.ok){ showMsg('adm-ann-msg','s','Отправлено всем.'); toast('Отправлено всем','s'); q('#adm-announce').value=''; loadAdmin(); } else { showMsg('adm-ann-msg','e',(d&&d.message)||'Не удалось.'); toast('Не удалось','e'); }
+}
+
+/* ---------- Shared ---------- */
+function showMsg(id, kind, text){ const m=q('#'+id); m.className='msg show '+kind; m.textContent=text; }
+function hideMsg(id){ const m=q('#'+id); m.className='msg'; }
+function sendToBot(action){
+  if(tg && tg.sendData){ tg.sendData(JSON.stringify({action})); }
+  else { showMsg('bc-msg','i','Открой эту функцию через бота.'); toast('Доступно через бота','i'); }
+}
+function renderAll(){ renderHome(); renderTemplates(); if(CUR==='monitor') renderMonitor(); if(CUR==='accounts') renderAccounts(); if(CUR==='sub') renderSub(); if(CUR==='broadcast') loadFolders(); }
+
+async function refresh(){
+  const d = await api('/api/state', {});
+  if(d && d.ok){ STATE = d; renderAll(); }
+}
+
+/* ---------- Pull to refresh ---------- */
+(function(){
+  let startY=0, pulling=false, dist=0;
+  const THRESH=72, MAX=110;
+  const ptr=()=>q('#ptr');
+  document.addEventListener('touchstart',e=>{
+    if(window.scrollY>0 || loginStep) { pulling=false; return; }
+    startY=e.touches[0].clientY; pulling=true; dist=0;
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!pulling) return;
+    dist=e.touches[0].clientY-startY;
+    if(dist<=0){ ptr().style.height='0px'; return; }
+    const h=Math.min(MAX,dist*0.55);
+    ptr().style.height=h+'px';
+    q('#ptr-text').textContent = h>=THRESH*0.55 ? 'Отпустите для обновления' : 'Потяните для обновления';
+  },{passive:true});
+  document.addEventListener('touchend',async()=>{
+    if(!pulling) return; pulling=false;
+    const fired = parseFloat(ptr().style.height)>= (THRESH*0.55);
+    if(fired){
+      ptr().style.height='40px'; ptr().classList.add('spin');
+      q('#ptr-text').textContent='Обновляю...'; haptic('medium');
+      await refresh();
+      if(CUR==='logs') await loadLogs();
+      if(CUR==='admin') await loadAdmin();
+      toast('Обновлено','s',1500);
+      setTimeout(()=>{ ptr().classList.remove('spin'); ptr().style.height='0px'; },350);
+    } else {
+      ptr().style.height='0px';
+    }
+  });
+})();
+
+/* ---------- Onboarding ---------- */
+const ONB = [
+  {ic:'<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7z"/><path d="M22 2 11 13"/></svg>', t:'Добро пожаловать в SendFlow', d:'Премиальная панель для управления Telegram-рассылками. Запускай, контролируй и масштабируй всё в одном месте.'},
+  {ic:'<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>', t:'Подключи аккаунты', d:'Добавь Telegram-аккаунты по номеру телефона. Рассылки распределяются по выбранным папкам и чатам.'},
+  {ic:'<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>', t:'Следи в реальном времени', d:'Мониторинг, живые логи, графики активности и удобный поиск. Потяни экран вниз, чтобы обновить данные.'}
+];
+let onbStep=0;
+function buildOnbDots(){
+  q('#onb-dots').innerHTML = ONB.map((_,i)=>`<i class="${i===onbStep?'on':''}"></i>`).join('');
+}
+function showOnbStep(){
+  const s=ONB[onbStep];
+  q('#onb-ico').innerHTML=s.ic;
+  q('#onb-title').textContent=s.t;
+  q('#onb-text').textContent=s.d;
+  q('#onb-next').textContent = onbStep===ONB.length-1 ? 'Начать' : 'Далее';
+  buildOnbDots();
+}
+function nextOnboarding(){
+  haptic('light');
+  if(onbStep<ONB.length-1){ onbStep++; showOnbStep(); }
+  else finishOnboarding();
+}
+function finishOnboarding(){
+  q('#onb').classList.remove('show');
+  try{ localStorage.setItem('sf_onboarded','1'); }catch(e){}
+}
+function replayOnboarding(){
+  onbStep=0; showOnbStep(); q('#onb').classList.add('show');
+}
+function maybeOnboard(){
+  let seen=false; try{ seen=localStorage.getItem('sf_onboarded')==='1'; }catch(e){}
+  if(!seen){ onbStep=0; showOnbStep(); q('#onb').classList.add('show'); }
+}
+
+/* ---------- Boot ---------- */
+async function boot(){
+  const d = await api('/api/auth/verify', {});
+  if(d && d.ok){
+    STATE = d;
+    renderAll();
+  } else if(!tg || !tg.initData){
+    STATE = demoState();
+    q('#hdr-sub').textContent = 'Демо-режим';
+    renderAll();
+  } else {
+    q('#hdr-sub').textContent = (d&&d.message) || 'Открой Mini App через бота';
+  }
+  maybeOnboard();
+  setInterval(()=>{ if(loginStep) return; refresh(); }, 5000);
+}
+
+function demoState(){
+  return {
+    ok:true,
+    is_admin:true,
+    has_access:true,
+    subscribed:true,
+    expires_at:new Date(Date.now()+1000*60*60*24*18).toISOString(),
+    accounts:[{id:1,phone:'+79990000001'},{id:2,phone:'+79990000002'}],
+    account_count:2,
+    bot_name:'SendFlow',
+    price_stars:50,
+    free_days:3,
+    trial_max:2,
+    owner_contact:'@support',
+    owner_contact_url:'#',
+    ref_hours:6,
+    ref_count:4,
+    ref_link:'https://t.me/sendflow_bot?start=123456',
+    templates:[{id:1,name:'Прогрев',text:'Привет. Есть обновление по проекту.'}],
+    jobs:[{
+      id:1,name:'Рассылка #1',status:'running',total:120,done:47,pct:39,eta:'18:20',
+      cycles:1,target:'Папки: Клиенты',error:'',
+      accounts:[{phone:'+79990000001',cur:'Чат продаж',next:'Партнеры',sent:28,failed:1,paid:0,cycle:1}]
+    }]
+  };
+}
+
+boot();
+</script>
+</body>
+</html>
